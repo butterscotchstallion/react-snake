@@ -1,9 +1,11 @@
 import './App.scss'
+import Game from "./components/game/Game.tsx";
+import "primereact/resources/themes/viva-dark/theme.css";
 
 function App() {
     return (
         <>
-            <h1 className="text-3xl font-bold underline">Hello world!</h1>
+            <Game/>
         </>
     )
 }
