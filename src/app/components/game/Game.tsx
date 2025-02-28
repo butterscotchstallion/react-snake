@@ -11,8 +11,6 @@ interface SnakeBlockProps {
 }
 
 export default function Game() {
-    const snakeWidth = 10;
-    const snakeHeight = 10;
     const toast: RefObject<Toast | null> = useRef(null);
     const defaultSnake: SnakeBlockProps[] = getDefaultSnake();
     const gameBoardEl: RefObject<null> = useRef(null);
@@ -23,10 +21,10 @@ export default function Game() {
     const [isGameOver, setIsGameOver] = useState(false);
     const [isPaused, setIsPaused] = useState(false);
     const [score, setScore] = useState(0);
-    const [width, setWidth] = useState(59);
-    const [height, setHeight] = useState(49);
+    const [width] = useState(49);
+    const [height] = useState(49);
     const [food, setFood] = useState({x: getRndPosition(), y: getRndPosition()});
-    const [gameOverReason, setGameOverReason] = useState("You collided with a wall and experienced an unscheduled rapid disassembly.");
+    const [gameOverReason] = useState("You collided with a wall and experienced an unscheduled rapid disassembly.");
     const [highScore, setHighScore] = useState<number>(0);
     const [applesIncreaseSpeed, setApplesIncreaseSpeed] = useState(false);
     const [snakeColor, setSnakeColor] = useState("7CFF7F");
@@ -101,7 +99,7 @@ export default function Game() {
         }
 
         moveInterval.current = setInterval(() => {
-            if (!isGameOver && isPaused) {
+            if (!isGameOver && !isPaused) {
                 move();
             }
         }, gameSpeed);
@@ -190,14 +188,14 @@ export default function Game() {
                                 <li className="mb-4">
                                     <Checkbox
                                         inputId="soundsEnabled"
-                                        onChange={e => setSoundsEnabled(e.checked)}
+                                        onChange={e => setSoundsEnabled(!!e.checked)}
                                         checked={soundsEnabled}></Checkbox>
                                     <label htmlFor="soundsEnabled" className="ml-2">Enable Sounds</label>
                                 </li>
                                 <li className="mb-4">
                                     <Checkbox
                                         inputId="applesIncreaseSpeed"
-                                        onChange={e => setApplesIncreaseSpeed(e.checked)}
+                                        onChange={e => setApplesIncreaseSpeed(!!e.checked)}
                                         checked={applesIncreaseSpeed}></Checkbox>
                                     <label htmlFor="applesIncreaseSpeed" className="ml-2">Apples Increase Speed</label>
                                 </li>
@@ -241,7 +239,7 @@ export default function Game() {
                             <div className="food bg-yellow-400 absolute w-[10px] h-[10px]"
                                  style={{left: food.x * 10, top: food.y * 10}}></div>
 
-                            {!isPaused ?
+                            {isPaused ?
                                 <div className="flex mx-auto items-center text-yellow-400 text-[64px]">
                                     PAUSED
                                 </div>
