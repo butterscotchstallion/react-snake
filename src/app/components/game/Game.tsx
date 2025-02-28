@@ -4,6 +4,9 @@ import {Card} from "primereact/card";
 import {Toast} from "primereact/toast";
 import {Checkbox} from "primereact/checkbox";
 import {ColorPicker, ColorPickerChangeEvent} from "primereact/colorpicker";
+import {InputText} from "primereact/inputtext";
+import {Slider} from "primereact/slider";
+import {GameSettings, getSettings, setSettings} from "../settings.ts";
 
 interface SnakeBlockProps {
     x: number;
@@ -19,7 +22,7 @@ export default function Game() {
     const [direction, setDirection] = useState("ArrowRight");
     const [gameSpeed, setGameSpeed] = useState(100);
     const [isGameOver, setIsGameOver] = useState(false);
-    const [isPaused, setIsPaused] = useState(false);
+    const [isPaused, setIsPaused] = useState(true);
     const [score, setScore] = useState(0);
     const [width] = useState(49);
     const [height] = useState(49);
@@ -28,14 +31,38 @@ export default function Game() {
     const [highScore, setHighScore] = useState<number>(0);
     const [applesIncreaseSpeed, setApplesIncreaseSpeed] = useState(false);
     const [snakeColor, setSnakeColor] = useState("7CFF7F");
+    const [appleColor, setAppleColor] = useState("FF7C7C");
     const [soundsEnabled, setSoundsEnabled] = useState(true);
+    const [showDebuggingInfo, setShowDebuggingInfo] = useState(false);
+
+    function save() {
+        const settings: GameSettings = {
+            applesIncreaseSpeed,
+            appleColor,
+            snakeColor,
+            soundsEnabled,
+            showDebuggingInfo,
+        };
+        setSettings(settings);
+    }
 
     /*useLayoutEffect(() => {
         setWidth(gameBoardEl.current.clientWidth);
         setHeight(gameBoardEl.current.clientHeight);
     }, []);*/
 
+    function initializeSettings() {
+        const settings: GameSettings = getSettings();
+        setSnakeColor(settings.snakeColor);
+        setAppleColor(settings.appleColor);
+        setApplesIncreaseSpeed(settings.applesIncreaseSpeed);
+        setShowDebuggingInfo(settings.showDebuggingInfo);
+        setSoundsEnabled(settings.soundsEnabled);
+    }
+
     useEffect(() => {
+        initializeSettings();
+
         const handleKeyDown = (event: KeyboardEvent) => {
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
                 setDirection(event.key);
@@ -86,7 +113,7 @@ export default function Game() {
                 if (applesIncreaseSpeed && gameSpeed >= 1) {
                     setGameSpeed(gameSpeed - 5);
                 }
-                
+
                 const newScore: number = score + 1;
                 const highScore: string | null = localStorage.getItem("highScore");
                 if (highScore && newScore > parseInt(highScore, 10)) {
@@ -109,7 +136,10 @@ export default function Game() {
             }
         }, gameSpeed);
         return () => stopMoveInterval();
-    }, [direction, snake, gameSpeed, food.x, food.y, score, width, height, getRndPosition, isPaused, isGameOver]);
+    }, [
+        direction, snake, gameSpeed, food.x, food.y, score, width, height, getRndPosition, isPaused, isGameOver,
+        applesIncreaseSpeed
+    ]);
 
     function onNewHighScore(newHighScore: number) {
         setHighScore(newHighScore);
@@ -133,7 +163,7 @@ export default function Game() {
         setSnake(defaultSnake);
         setFood({x: getRndPosition(), y: getRndPosition()});
         setScore(0);
-        setIsPaused(true);
+        setGameSpeed(100);
     }
 
     function getRndPosition(): number {
@@ -168,6 +198,20 @@ export default function Game() {
         return snake;
     }
 
+    function pause() {
+        setIsPaused(!isPaused);
+
+        if (isPaused) {
+            pauseInterval.current = setInterval(() => {
+                setPausedString(pausedString ? "" : "PAUSED");
+            }, 1000);
+        } else {
+            if (pauseInterval.current) {
+                clearInterval(pauseInterval.current);
+            }
+        }
+    }
+
     return (
         <>
             <div className="mx-auto mt-4 w-[800px] h-[500px]">
@@ -181,7 +225,7 @@ export default function Game() {
                     : ""}
                 <div className="flex gap-4">
                     <aside>
-                        <Card title="Controls" className="mb-2">
+                        <Card title="Info" className="mb-2">
                             <ul>
                                 <li>Score: {score}</li>
                                 <li>High Score: {highScore}</li>
@@ -205,20 +249,30 @@ export default function Game() {
                                     <label htmlFor="applesIncreaseSpeed" className="ml-2">Apples Increase Speed</label>
                                 </li>
                                 <li className="mb-4">
-                                    <label htmlFor="gameSpeed">Game Speed</label>
-                                    <input type="range"
-                                           className="mt-2"
-                                           id="gameSpeed"
-                                           min="100"
-                                           max="1000"
-                                           value={gameSpeed}
-                                           onChange={e => setGameSpeed(parseInt(e.target.value, 10))}/>
+                                    <label htmlFor="gameSpeed" className="mb-2 block">Game Speed</label>
+                                    <InputText value={gameSpeed.toString()}
+                                               className="w-[75px] mb-2"
+                                               readOnly={true}
+                                               onChange={(e) => setGameSpeed(parseInt(e.target.value, 10))}/>
+                                    <Slider value={gameSpeed}
+                                            className="mt-4"
+                                            min={1}
+                                            max={100}
+                                            onChange={(e) => setGameSpeed(parseInt(e.value, 10))}/>
                                 </li>
                                 <li className="mb-4">
                                     <ColorPicker inputId="snakeColor"
                                                  value={snakeColor}
                                                  onChange={(e: ColorPickerChangeEvent) => setSnakeColor(e.value)}/>
                                     <label htmlFor="snakeColor" className="ml-2">Snake Color</label>
+                                </li>
+
+                                <li className="mb-4">
+                                    <Checkbox
+                                        inputId="showDebuggingInfo"
+                                        onChange={e => setShowDebuggingInfo(!!e.checked)}
+                                        checked={showDebuggingInfo}></Checkbox>
+                                    <label htmlFor="showDebuggingInfo" className="ml-2">Show Debugging Info</label>
                                 </li>
                             </ul>
                         </Card>
@@ -227,7 +281,7 @@ export default function Game() {
                         <div
                             ref={gameBoardEl}
                             onClick={() => {
-                                setIsPaused(!isPaused)
+                                setIsPaused(!isPaused);
                             }}
                             className="flex relative cursor-pointer w-[500px] h-[500px] bg-indigo-950 border-1 border-indigo-500">
 
@@ -245,7 +299,7 @@ export default function Game() {
                                  style={{left: food.x * 10, top: food.y * 10}}></div>
 
                             {isPaused ?
-                                <div className="flex mx-auto items-center text-yellow-400 text-[64px]">
+                                <div className="flex mx-auto items-center text-yellow-400 text-[64px] animate-pulse">
                                     PAUSED
                                 </div>
                                 : ''}
