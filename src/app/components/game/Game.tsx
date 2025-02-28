@@ -81,7 +81,12 @@ export default function Game() {
 
             updatedSnake.unshift(newSnakeHead);
 
-            if (newSnakeHead.x === food.x && newSnakeHead.y === food.y) {
+            const appleEaten: boolean = snakeHead.x === food.x && snakeHead.y === food.y;
+            if (appleEaten) {
+                if (applesIncreaseSpeed && gameSpeed >= 1) {
+                    setGameSpeed(gameSpeed - 5);
+                }
+                
                 const newScore: number = score + 1;
                 const highScore: string | null = localStorage.getItem("highScore");
                 if (highScore && newScore > parseInt(highScore, 10)) {
