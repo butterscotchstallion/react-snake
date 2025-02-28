@@ -14,6 +14,7 @@ interface SnakeBlockProps {
 }
 
 export default function Game() {
+    const DEFAULT_SNAKE_SIZE: number = 6;
     const toast: RefObject<Toast | null> = useRef(null);
     const defaultSnake: SnakeBlockProps[] = getDefaultSnake();
     const gameBoardEl: RefObject<null> = useRef(null);
@@ -76,6 +77,11 @@ export default function Game() {
 
         return () => window.removeEventListener('keydown', handleKeyDown);
     }, []);
+
+    useEffect(() => {
+        save();
+        console.log("Saved settings");
+    }, [soundsEnabled, applesIncreaseSpeed, gameSpeed, snakeColor, appleColor, showDebuggingInfo, save]);
 
     useEffect(() => {
         function move() {
@@ -189,27 +195,13 @@ export default function Game() {
         const snake: SnakeBlockProps[] = [];
         const x: number = 20;
         const y: number = 20;
-        for (let j = 0; j < 6; j++) {
+        for (let j = 0; j < DEFAULT_SNAKE_SIZE; j++) {
             snake.push({
                 x: x,
                 y: y
             });
         }
         return snake;
-    }
-
-    function pause() {
-        setIsPaused(!isPaused);
-
-        if (isPaused) {
-            pauseInterval.current = setInterval(() => {
-                setPausedString(pausedString ? "" : "PAUSED");
-            }, 1000);
-        } else {
-            if (pauseInterval.current) {
-                clearInterval(pauseInterval.current);
-            }
-        }
     }
 
     return (
@@ -229,7 +221,8 @@ export default function Game() {
                             <ul>
                                 <li>Score: {score}</li>
                                 <li>High Score: {highScore}</li>
-                                <li>Position: {[snake[0].x, snake[0].y].join(', ')}</li>
+                                {showDebuggingInfo ?
+                                    <li className="text-gray-400">Position: {[snake[0].x, snake[0].y].join(', ')}</li> : ''}
                             </ul>
                         </Card>
                         <Card title="Settings">
