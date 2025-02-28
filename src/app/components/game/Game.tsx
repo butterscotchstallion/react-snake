@@ -7,6 +7,7 @@ import {ColorPicker, ColorPickerChangeEvent} from "primereact/colorpicker";
 import {InputText} from "primereact/inputtext";
 import {Slider} from "primereact/slider";
 import {GameSettings, getSettings, setSettings} from "../settings.ts";
+import 'primeicons/primeicons.css';
 
 interface SnakeBlockProps {
     x: number;
@@ -32,7 +33,7 @@ export default function Game() {
     const [highScore, setHighScore] = useState<number>(0);
     const [applesIncreaseSpeed, setApplesIncreaseSpeed] = useState(false);
     const [snakeColor, setSnakeColor] = useState("7CFF7F");
-    const [appleColor, setAppleColor] = useState("FF7C7C");
+    const [appleColor, setAppleColor] = useState("98cc31");
     const [soundsEnabled, setSoundsEnabled] = useState(true);
     const [showDebuggingInfo, setShowDebuggingInfo] = useState(false);
 
@@ -259,7 +260,12 @@ export default function Game() {
                                                  onChange={(e: ColorPickerChangeEvent) => setSnakeColor(e.value)}/>
                                     <label htmlFor="snakeColor" className="ml-2">Snake Color</label>
                                 </li>
-
+                                <li className="mb-4">
+                                    <ColorPicker inputId="appleColor"
+                                                 value={appleColor}
+                                                 onChange={(e: ColorPickerChangeEvent) => setAppleColor(e.value)}/>
+                                    <label htmlFor="appleColor" className="ml-2">Apple Color</label>
+                                </li>
                                 <li className="mb-4">
                                     <Checkbox
                                         inputId="showDebuggingInfo"
@@ -288,8 +294,18 @@ export default function Game() {
                                      }}></div>
                             ))}
 
-                            <div className="food bg-yellow-400 absolute w-[10px] h-[10px]"
-                                 style={{left: food.x * 10, top: food.y * 10}}></div>
+                            <div className="food absolute w-[16px] h-[16px]"
+                                 style={{
+                                     color: `#${appleColor}`,
+                                     left: food.x * 10,
+                                     top: food.y * 10
+                                 }}>
+                                <i style={{
+                                    left: food.x * 10,
+                                    top: food.y * 10
+                                }}
+                                   className="pi pi-apple"></i>
+                            </div>
 
                             {isPaused ?
                                 <div className="flex mx-auto items-center text-yellow-400 text-[64px] animate-pulse">
