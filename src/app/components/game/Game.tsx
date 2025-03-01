@@ -245,6 +245,18 @@ export default function Game() {
         return snake;
     }
 
+    function resetHighScore() {
+        setHighScore(0);
+        localStorage.setItem("highScore", "0");
+        if (toast.current) {
+            toast.current.show({
+                severity: 'success',
+                summary: 'High Score Reset!',
+                detail: `Your new high score is 0!`
+            });
+        }
+    }
+
     return (
         <>
             <div className="mx-auto mt-4 w-[800px] h-[500px]">
@@ -318,6 +330,9 @@ export default function Game() {
                                         onChange={e => setShowDebuggingInfo(!!e.checked)}
                                         checked={showDebuggingInfo}></Checkbox>
                                     <label htmlFor="showDebuggingInfo" className="ml-2">Show Debugging Info</label>
+                                </li>
+                                <li className="mb-4">
+                                    <Button label="Reset High Score" onClick={resetHighScore}/>
                                 </li>
                             </ul>
                         </Card>
