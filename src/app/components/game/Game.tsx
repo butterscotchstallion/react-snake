@@ -69,6 +69,10 @@ export default function Game() {
             if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
                 setDirection(event.key);
             }
+
+            if (event.code === "Space") {
+                setIsPaused(!isPaused);
+            }
         }
         window.addEventListener('keydown', handleKeyDown);
 
@@ -77,7 +81,7 @@ export default function Game() {
         setHighScore(getHighScoreFromStorage());
 
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, []);
+    }, [isPaused]);
 
     useEffect(() => {
         save();
@@ -108,7 +112,15 @@ export default function Game() {
                     break;
             }
 
+            // Wall collision
             if (newSnakeHead.x < 0 || newSnakeHead.x > width || newSnakeHead.y < 0 || newSnakeHead.y > height) {
+                setIsGameOver(true);
+                return;
+            }
+
+            // Self collision
+            const selfCollision: boolean = isSnakeHeadIntersectingWithSnakeSegment(newSnakeHead.x, newSnakeHead.y);
+            if (selfCollision) {
                 setIsGameOver(true);
                 return;
             }
@@ -147,6 +159,15 @@ export default function Game() {
         direction, snake, gameSpeed, food.x, food.y, score, width, height, getRndPosition, isPaused, isGameOver,
         applesIncreaseSpeed
     ]);
+
+    function isSnakeHeadIntersectingWithSnakeSegment(x: number, y: number): boolean {
+        snake.forEach((segment: SnakeBlockProps) => {
+            if (segment.x === x && segment.y === y) {
+                return true;
+            }
+        });
+        return false;
+    }
 
     function onNewHighScore(newHighScore: number) {
         setHighScore(newHighScore);
@@ -294,18 +315,19 @@ export default function Game() {
                                      }}></div>
                             ))}
 
-                            <div className="food absolute w-[16px] h-[16px]"
+                            {/*
+                            <i className="block pi pi-apple food absolute w-[16px] h-[16px]"
+                               style={{
+                                   color: `#${appleColor}`,
+                                   left: food.x * 10,
+                                   top: food.y * 10
+                               }}></i>*/}
+                            <div className="block absolute w-[10px] h-[10px]"
                                  style={{
-                                     color: `#${appleColor}`,
+                                     backgroundColor: `#${appleColor}`,
                                      left: food.x * 10,
                                      top: food.y * 10
-                                 }}>
-                                <i style={{
-                                    left: food.x * 10,
-                                    top: food.y * 10
-                                }}
-                                   className="pi pi-apple"></i>
-                            </div>
+                                 }}></div>
 
                             {isPaused ?
                                 <div className="flex mx-auto items-center text-yellow-400 text-[64px] animate-pulse">
