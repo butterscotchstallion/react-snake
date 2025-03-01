@@ -20,6 +20,7 @@ export default function Game() {
         return new SoundPlayer();
     }, []);
     const DEFAULT_SNAKE_SIZE: number = 6;
+    const DEFAULT_GAME_SPEED: number = 80;
     const WALL_DEATH_MSG = "You collided with a wall and experienced an unscheduled rapid disassembly.";
     const SELF_COLLISION_DEATH_MSG = "You tried to eat yourself.";
     const toast: RefObject<Toast | null> = useRef(null);
@@ -28,7 +29,7 @@ export default function Game() {
     const moveInterval: RefObject<number | null> = useRef(null);
     const [snake, setSnake] = useState<SnakeBlockProps[]>(defaultSnake);
     const [direction, setDirection] = useState("ArrowRight");
-    const [gameSpeed, setGameSpeed] = useState(100);
+    const [gameSpeed, setGameSpeed] = useState(DEFAULT_GAME_SPEED);
     const [isGameOver, setIsGameOver] = useState(false);
     const [isPaused, setIsPaused] = useState(true);
     const [score, setScore] = useState(0);
@@ -215,7 +216,9 @@ export default function Game() {
         setSnake(defaultSnake);
         setFood({x: getRndPosition(), y: getRndPosition()});
         setScore(0);
-        setGameSpeed(100);
+        if (applesIncreaseSpeed) {
+            setGameSpeed(DEFAULT_GAME_SPEED);
+        }
     }
 
     function initializeScoreStorage() {
@@ -307,7 +310,7 @@ export default function Game() {
                                     <Slider value={gameSpeed}
                                             className="mt-4"
                                             min={1}
-                                            max={100}
+                                            max={80}
                                             onChange={(e) => {
                                                 setGameSpeed(parseInt(e.value.toString(), 10))
                                             }}/>
