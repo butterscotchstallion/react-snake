@@ -1,4 +1,4 @@
-import {RefObject, useEffect, useRef, useState} from "react";
+import {RefObject, useCallback, useEffect, useMemo, useRef, useState} from "react";
 import {Button} from "primereact/button";
 import {Card} from "primereact/card";
 import {Toast} from "primereact/toast";
@@ -16,7 +16,9 @@ interface SnakeBlockProps {
 }
 
 export default function Game() {
-    const soundPlayer: SoundPlayer = new SoundPlayer();
+    const soundPlayer: SoundPlayer = useMemo(() => {
+        return new SoundPlayer();
+    }, []);
     const DEFAULT_SNAKE_SIZE: number = 6;
     const WALL_DEATH_MSG = "You collided with a wall and experienced an unscheduled rapid disassembly.";
     const SELF_COLLISION_DEATH_MSG = "You tried to eat yourself.";
@@ -32,6 +34,10 @@ export default function Game() {
     const [score, setScore] = useState(0);
     const [width] = useState(49);
     const [height] = useState(49);
+    const getRndPosition = useCallback(() => {
+        // Game board is a square so we can multiply by width or height here
+        return Math.floor(Math.random() * height);
+    }, [height]);
     const [food, setFood] = useState({x: getRndPosition(), y: getRndPosition()});
     const [gameOverReason, setGameOverReason] = useState(WALL_DEATH_MSG);
     const [highScore, setHighScore] = useState<number>(0);
@@ -40,17 +46,6 @@ export default function Game() {
     const [appleColor, setAppleColor] = useState("98cc31");
     const [soundsEnabled, setSoundsEnabled] = useState(true);
     const [showDebuggingInfo, setShowDebuggingInfo] = useState(false);
-
-    function save() {
-        const settings: GameSettings = {
-            applesIncreaseSpeed,
-            appleColor,
-            snakeColor,
-            soundsEnabled,
-            showDebuggingInfo,
-        };
-        setSettings(settings);
-    }
 
     /*useLayoutEffect(() => {
         setWidth(gameBoardEl.current.clientWidth);
@@ -89,11 +84,32 @@ export default function Game() {
     }, [isPaused, soundPlayer]);
 
     useEffect(() => {
+        function save() {
+            const settings: GameSettings = {
+                applesIncreaseSpeed,
+                appleColor,
+                snakeColor,
+                soundsEnabled,
+                showDebuggingInfo,
+            };
+            setSettings(settings);
+        }
+
         save();
         console.log("Saved settings");
-    }, [soundsEnabled, applesIncreaseSpeed, gameSpeed, snakeColor, appleColor, showDebuggingInfo, save]);
+    }, [soundsEnabled, applesIncreaseSpeed, gameSpeed, snakeColor, appleColor, showDebuggingInfo]);
 
     useEffect(() => {
+        function isSnakeHeadIntersectingWithSnakeSegment(x: number, y: number): boolean {
+            let collision = false;
+            snake.forEach((segment: SnakeBlockProps) => {
+                if (segment.x === x && segment.y === y) {
+                    collision = true;
+                }
+            });
+            return collision;
+        }
+
         function move() {
             const updatedSnake: SnakeBlockProps[] = [...snake];
             const snakeHead: SnakeBlockProps = updatedSnake[0];
@@ -172,17 +188,10 @@ export default function Game() {
             }
         }, gameSpeed);
         return () => stopMoveInterval();
-    }, [direction, snake, gameSpeed, food.x, food.y, score, width, height, getRndPosition, isPaused, isGameOver, applesIncreaseSpeed, isSnakeHeadIntersectingWithSnakeSegment, soundPlayer]);
+    }, [direction, snake, gameSpeed, food.x, food.y, score, width, height, getRndPosition,
+        isPaused, isGameOver, applesIncreaseSpeed,
+        soundPlayer, soundsEnabled]);
 
-    function isSnakeHeadIntersectingWithSnakeSegment(x: number, y: number): boolean {
-        let collision = false;
-        snake.forEach((segment: SnakeBlockProps) => {
-            if (segment.x === x && segment.y === y) {
-                collision = true;
-            }
-        });
-        return collision;
-    }
 
     function onNewHighScore(newHighScore: number) {
         setHighScore(newHighScore);
@@ -207,11 +216,6 @@ export default function Game() {
         setFood({x: getRndPosition(), y: getRndPosition()});
         setScore(0);
         setGameSpeed(100);
-    }
-
-    function getRndPosition(): number {
-        // Game board is a square so we can multiply by width or height here
-        return Math.floor(Math.random() * height);
     }
 
     function initializeScoreStorage() {
@@ -259,7 +263,9 @@ export default function Game() {
                                 <li>Score: {score}</li>
                                 <li>High Score: {highScore}</li>
                                 {showDebuggingInfo ?
-                                    <li className="text-gray-400">Position: {[snake[0].x, snake[0].y].join(', ')}</li> : ''}
+                                    <li className="text-gray-400">
+                                        Position: {[snake[0].x, snake[0].y].join(', ')}
+                                    </li> : ''}
                             </ul>
                         </Card>
                         <Card title="Settings">
@@ -283,12 +289,16 @@ export default function Game() {
                                     <InputText value={gameSpeed.toString()}
                                                className="w-[75px] mb-2"
                                                readOnly={true}
-                                               onChange={(e) => setGameSpeed(parseInt(e.target.value, 10))}/>
+                                               onChange={(e) => {
+                                                   setGameSpeed(parseInt(e.target.value, 10))
+                                               }}/>
                                     <Slider value={gameSpeed}
                                             className="mt-4"
                                             min={1}
                                             max={100}
-                                            onChange={(e) => setGameSpeed(parseInt(e.value, 10))}/>
+                                            onChange={(e) => {
+                                                setGameSpeed(parseInt(e.value.toString(), 10))
+                                            }}/>
                                 </li>
                                 <li className="mb-4">
                                     <ColorPicker inputId="snakeColor"
