@@ -29,7 +29,7 @@ export default function Game() {
     const [width] = useState(49);
     const [height] = useState(49);
     const [food, setFood] = useState({x: getRndPosition(), y: getRndPosition()});
-    const [gameOverReason] = useState("You collided with a wall and experienced an unscheduled rapid disassembly.");
+    const [gameOverReason, setGameOverReason] = useState("You collided with a wall and experienced an unscheduled rapid disassembly.");
     const [highScore, setHighScore] = useState<number>(0);
     const [applesIncreaseSpeed, setApplesIncreaseSpeed] = useState(false);
     const [snakeColor, setSnakeColor] = useState("7CFF7F");
@@ -121,6 +121,7 @@ export default function Game() {
             // Self collision
             const selfCollision: boolean = isSnakeHeadIntersectingWithSnakeSegment(newSnakeHead.x, newSnakeHead.y);
             if (selfCollision) {
+                setGameOverReason("You tried to eat yourself.");
                 setIsGameOver(true);
                 return;
             }
@@ -161,12 +162,13 @@ export default function Game() {
     ]);
 
     function isSnakeHeadIntersectingWithSnakeSegment(x: number, y: number): boolean {
+        let collision = false;
         snake.forEach((segment: SnakeBlockProps) => {
             if (segment.x === x && segment.y === y) {
-                return true;
+                collision = true;
             }
         });
-        return false;
+        return collision;
     }
 
     function onNewHighScore(newHighScore: number) {
