@@ -16,6 +16,8 @@ interface SnakeBlockProps {
 
 export default function Game() {
     const DEFAULT_SNAKE_SIZE: number = 6;
+    const WALL_DEATH_MSG = "You collided with a wall and experienced an unscheduled rapid disassembly.";
+    const SELF_COLLISION_DEATH_MSG = "You tried to eat yourself.";
     const toast: RefObject<Toast | null> = useRef(null);
     const defaultSnake: SnakeBlockProps[] = getDefaultSnake();
     const gameBoardEl: RefObject<null> = useRef(null);
@@ -29,7 +31,7 @@ export default function Game() {
     const [width] = useState(49);
     const [height] = useState(49);
     const [food, setFood] = useState({x: getRndPosition(), y: getRndPosition()});
-    const [gameOverReason, setGameOverReason] = useState("You collided with a wall and experienced an unscheduled rapid disassembly.");
+    const [gameOverReason, setGameOverReason] = useState(WALL_DEATH_MSG);
     const [highScore, setHighScore] = useState<number>(0);
     const [applesIncreaseSpeed, setApplesIncreaseSpeed] = useState(false);
     const [snakeColor, setSnakeColor] = useState("7CFF7F");
@@ -114,6 +116,7 @@ export default function Game() {
 
             // Wall collision
             if (newSnakeHead.x < 0 || newSnakeHead.x > width || newSnakeHead.y < 0 || newSnakeHead.y > height) {
+                setGameOverReason(WALL_DEATH_MSG);
                 setIsGameOver(true);
                 return;
             }
@@ -121,7 +124,7 @@ export default function Game() {
             // Self collision
             const selfCollision: boolean = isSnakeHeadIntersectingWithSnakeSegment(newSnakeHead.x, newSnakeHead.y);
             if (selfCollision) {
-                setGameOverReason("You tried to eat yourself.");
+                setGameOverReason(SELF_COLLISION_DEATH_MSG);
                 setIsGameOver(true);
                 return;
             }
