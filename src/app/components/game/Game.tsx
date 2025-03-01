@@ -8,6 +8,7 @@ import {InputText} from "primereact/inputtext";
 import {Slider} from "primereact/slider";
 import {GameSettings, getSettings, setSettings} from "../settings.ts";
 import 'primeicons/primeicons.css';
+import SoundPlayer from "../soundPlayer.ts";
 
 interface SnakeBlockProps {
     x: number;
@@ -15,6 +16,7 @@ interface SnakeBlockProps {
 }
 
 export default function Game() {
+    const soundPlayer: SoundPlayer = new SoundPlayer();
     const DEFAULT_SNAKE_SIZE: number = 6;
     const WALL_DEATH_MSG = "You collided with a wall and experienced an unscheduled rapid disassembly.";
     const SELF_COLLISION_DEATH_MSG = "You tried to eat yourself.";
@@ -65,6 +67,7 @@ export default function Game() {
     }
 
     useEffect(() => {
+        soundPlayer.initialize();
         initializeSettings();
 
         const handleKeyDown = (event: KeyboardEvent) => {
@@ -83,7 +86,7 @@ export default function Game() {
         setHighScore(getHighScoreFromStorage());
 
         return () => window.removeEventListener('keydown', handleKeyDown);
-    }, [isPaused]);
+    }, [isPaused, soundPlayer]);
 
     useEffect(() => {
         save();
@@ -116,6 +119,9 @@ export default function Game() {
 
             // Wall collision
             if (newSnakeHead.x < 0 || newSnakeHead.x > width || newSnakeHead.y < 0 || newSnakeHead.y > height) {
+                if (soundsEnabled) {
+                    soundPlayer.playGameOverSound();
+                }
                 setGameOverReason(WALL_DEATH_MSG);
                 setIsGameOver(true);
                 return;
@@ -124,6 +130,9 @@ export default function Game() {
             // Self collision
             const selfCollision: boolean = isSnakeHeadIntersectingWithSnakeSegment(newSnakeHead.x, newSnakeHead.y);
             if (selfCollision) {
+                if (soundsEnabled) {
+                    soundPlayer.playGameOverSound();
+                }
                 setGameOverReason(SELF_COLLISION_DEATH_MSG);
                 setIsGameOver(true);
                 return;
@@ -133,6 +142,10 @@ export default function Game() {
 
             const appleEaten: boolean = snakeHead.x === food.x && snakeHead.y === food.y;
             if (appleEaten) {
+                if (soundsEnabled) {
+                    soundPlayer.playAppleSound();
+                }
+
                 if (applesIncreaseSpeed && gameSpeed >= 1) {
                     setGameSpeed(gameSpeed - 5);
                 }
@@ -159,10 +172,7 @@ export default function Game() {
             }
         }, gameSpeed);
         return () => stopMoveInterval();
-    }, [
-        direction, snake, gameSpeed, food.x, food.y, score, width, height, getRndPosition, isPaused, isGameOver,
-        applesIncreaseSpeed
-    ]);
+    }, [direction, snake, gameSpeed, food.x, food.y, score, width, height, getRndPosition, isPaused, isGameOver, applesIncreaseSpeed, isSnakeHeadIntersectingWithSnakeSegment, soundPlayer]);
 
     function isSnakeHeadIntersectingWithSnakeSegment(x: number, y: number): boolean {
         let collision = false;
