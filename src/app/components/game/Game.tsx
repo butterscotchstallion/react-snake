@@ -190,10 +190,8 @@ export default function Game() {
         }, gameSpeed);
         return () => stopMoveInterval();
     }, [direction, snake, gameSpeed, food.x, food.y, score, width, height, getRndPosition,
-        isPaused, isGameOver, applesIncreaseSpeed,
-        soundPlayer, soundsEnabled]);
-
-
+        isPaused, isGameOver, applesIncreaseSpeed, soundPlayer, soundsEnabled]);
+    
     function onNewHighScore(newHighScore: number) {
         setHighScore(newHighScore);
         if (toast.current) {

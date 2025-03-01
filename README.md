@@ -1,2 +1,11 @@
 # react-snake
-Snake game in React
+
+Snake game
+
+## Libraries
+
+- React 19
+- PrimeReact
+- Tailwind
+
+[!snake game](screenshots/snake2.gif)
