@@ -7,5 +7,6 @@ Snake game
 - React 19
 - PrimeReact
 - Tailwind
+- ToneJS for sounds
 
-[!snake game](screenshots/snake2.gif)
+![snake game](./screenshots/snake2.gif)
